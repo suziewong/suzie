@@ -1,0 +1,81 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>用户系统配置</title>
+  <style type="text/css">
+    html{font-size:12px;}
+	fieldset{width:520px; margin: 0 auto;}
+	legend{font-weight:bold; font-size:14px;}
+	label{float:left; width:70px; margin-left:10px;}
+	.left{margin-left:80px;}
+	.input{width:150px;}
+	span{color: #000000;}
+  </style>
+<script language=JavaScript>
+<!--
+/*
+function InputCheck(RegForm){
+{
+  {
+    alert("用户名不能为空");
+    RegForm.username.focus();
+    return (false);
+  }
+  if (RegForm.password.value == "")
+  {
+    alert("密码不能为空!");
+    RegForm.password.focus();
+    return (false);
+  }
+  if (RegForm.repass.value != RegForm.password.value)
+  {
+    alert("两次密码不一致!");
+    RegForm.repass.focus();
+    return (false);
+  }
+  if (RegForm.email.value == "")
+  {
+    alert("电子邮箱不能为空!");
+    RegForm.email.focus();
+    return (false);
+}*/
+//-->
+</script>
+</head>
+<body >
+<div >
+<fieldset /* style="background-image:url(imgs/222.jpg)"*/>
+<legend>用户系统配置</legend>
+<form name="RegForm" method="post" action="reg2.php" onSubmit="return InputCheck(this)">
+<p>
+<label for="frontcolor" class="label">前景色:</label>
+<input id="frontcolor" name="frontcolor" type="text" class="input"value="safcdsadfc" />
+<span>（必填，细胞颜色，可参考)</span>
+<p/>
+<p>
+<label for="backcoclor" class="label">背景色:</label>
+<input id="backcolor" name="backcolor" type="text" class="input" />
+<span>(必填)</span>
+<p/>
+<p>
+<label for="img" class="label">标定图像:</label>
+<input id="img" name="img" type="text" class="input" />
+<p/>
+<p>
+<label for="img2" class="label">样图:</label>
+<input id="img2" name="img2" type="text" class="input" />
+<span>(必填)</span>
+<p/>
+<p>
+<input type="submit" name="submit" value="  提交您的系统配置 " class="left" />
+<span>(点此将更改您的系统配置，以前的系统配置将被刷新)</span>
+</p>
+<p>
+<a href="my.php">return</a>
+</p>
+</form>
+</fieldset>
+</div>
+</body>
+</html>
