@@ -1,0 +1,9 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-04-22T01:36:12+08:00
+
+====== Home ======
+Created 星期日 22 四月 2012
+1.arch的学习，使用fedora，opensuse等发行版，掌握不同的特点
+2.
+

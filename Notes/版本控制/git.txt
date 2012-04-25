@@ -1,0 +1,9 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-04-23T16:34:29+08:00
+
+====== git ======
+Created 星期一 23 四月 2012
+中文教程
+http://progit.org/book/zh/
+{{~/图片/git.png?width=300}}

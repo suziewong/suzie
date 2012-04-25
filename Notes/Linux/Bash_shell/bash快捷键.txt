@@ -1,0 +1,18 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-04-23T18:28:00+08:00
+
+====== bash快捷键 ======
+Created 星期一 23 四月 2012
+
+Ctrl-A 相当于HOME键，用于将光标定位到本行最前面
+
+
+Ctrl-E 相当于End键，即将光标移动到本行末尾
+Ctrl-K 用于删除从光标处开始到结尾处的所有字符
+
+Ctrl-L 清屏，相当于clear命令
+
+Ctrl-R 进入历史命令查找状态，然后你输入几个关键字符，就可以找到你使用过的命令
+
+Ctrl-U 用于删除从光标开始到行首的所有字符。一般在密码或命令输入错误时常用

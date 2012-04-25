@@ -1,0 +1,34 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-04-23T16:19:18+08:00
+
+====== scp与rsync ======
+Created 星期一 23 四月 2012
+
+===== scp =====
+scp是一种secure copy(远程文件复制程序)的命令。（基于ssh协议）
+   scp的简介及作用 
+   http://space.itpub.net/3090/viewspace-702619 
+  注意-P 选择端口 . 注意 -p 已经被 rcp 使用  89的端口是65089
+
+=== Rcp是神马，与scp区别？ ===
+rcp 意为“ remote file copy ”（远程文件拷贝）。该命令用于计算机之间进行文件拷贝。其有两种格式。第一种格式用于文件到文件的拷贝；第二种格式用于把文件或目录拷贝到另一个目录中。 
+ 与rcp 不同的是，scp 在需要进行验证时会要求你输入密码或口令。 基本上 scp 是 rcp的取代品. 
+
+=== Rsync ===
+   文件同步管理软件 ，与scp类似，可以说是scp的进阶，详细的内容可以参考养贤办公室里的centOS5系统管理的最后一个关于rsync的章节
+  scp和rsync的使用
+ http://happyman-bruce.blogbus.com/logs/1888496.html 
+
+=== 用rsync代替scp ===
+scp可以直接在支持ssh连接的主机间进行文件传输，加上-r还能支持文件遍历。不过有时候网络情况不大好scp容易出错再次scp又要重新来过，利用rsync就简单的多了，rsyc的优点我就不说了，用过的都说好^_^
+运行：
+
+$ rsync -ave ssh root@lcuc.org.cn:/home/lcuc  /data
+
+就可以通过ssh使用rsync进行同步了，ssh和rsync的优点都有了还不怕短线，断了重新再连接就可以了。
+还有一点是这种方式不需要远程服务器开启rsync服务，方便使用。
+如果ssh使用的非标端口开最好用下面的写法：
+$ rsync -av '-e ssh -p 6600' root@lcuc.org.cn:/home/lcuc  /data
+
+6600是ssh服务器的端口号。    

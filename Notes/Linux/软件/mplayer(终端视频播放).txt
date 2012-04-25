@@ -1,0 +1,16 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-04-25T16:41:04+08:00
+
+====== mplayer(终端视频播放) ======
+Created 星期三 25 四月 2012
+
+=== mplayer电影当作字符播放 ===
+
+
+
+=== mplayer -vo aa -monitorpixelaspect 0.5 filename ===
+
+         aa输出不能保证，正常比例，用monitorpixelaspect 来调节比例
+         1，2控制对比度  3，4 控制亮度  5切换快速渲染 6切换抖动方式 7反转效果  
+         a  换成caca 输出，即彩色模式输出

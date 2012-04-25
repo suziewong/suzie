@@ -1,0 +1,24 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-04-23T18:58:53+08:00
+
+====== 管道与重定向 ======
+Created 星期一 23 四月 2012
+ 
+
+===  管道 ===
+     | 管道线  从左往右
+
+===   重定向 ===
+< 输入重定向
+<<!   ！实现输入重定向的事例，here文件
+>输出重定向 >>追加
+2>或2>>错误重定向
+例子：ls -l >dir
+          Ls -l >>dir
+          wc < /dir(wc 数文件有多少字符，字节，行等的命令，详细如下)
+          wc<<! >dir (导出到这个dir文件) dssdsadasdsadsad ！
+          Echo “dasdasd”>message
+      Find ~ -name *.mp3 > ~/cd.play.list(快速导出播放列表)
+    wc命令，发现一好网站roclinux.cn
+关于wc命令，很详细http://roclinux.cn/?p=1288 

@@ -1,0 +1,65 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-04-25T16:39:52+08:00
+
+====== MOC(终端音乐播放) ======
+Created 星期三 25 四月 2012
+Ubuntu 命令行下的音乐播放器 — MOC  
+MOC是运行在“终端”下的音乐播放器，支持MP3，wma等格式。安装起来倒是很简单，至于使用，基本就是靠“字母快捷键”搞定的，其实，大部分运行在“终端”下的软件都是这样的。
+
+在ubuntu终端下输入 sudo apt-get install moc
+
+安装完成后在终端自下输入：“mocp”打开moc，很简洁吧。下面介绍一下他的操作：
+
+打开moc后输入“h”你会看到一下使用说明
+
+  q              Detach MOC from the server
+  ENTER          Start playing files (from this file) or go to directory
+  DOWN           Move down in the menu
+  UP             Move up in the menu
+  PAGE_DOWN      Move one page down
+  PAGE_UP        Move one page up
+  HOME           Move to the first item in the menu
+  END            Move to the last item in the menu
+  Q              Quit
+  s              Stop
+  n              Play next file
+  b              Play previous file
+  p SPACE        Pause
+  f              Toggle ReadTags option
+  S              Toggle Shuffle
+  R              Toggle repeat
+  X              Toggle AutoNext option
+  TAB            Switch between playlist and file list
+
+以上只是部分操作，根据我个人的摸索下面对其操作进行部分补充：
+
+a： 将目录中的歌曲加入到右面的播放列表。
+
+d：可将右面播放列表中的歌曲删除
+
+s：设置是否“resdtags”
+
+g：搜索歌曲
+
+j：调整 右面播放列表中的歌曲的顺序
+
+l：关闭／打开 播放列表
+
+i : 输入指定目录 进入文件夹
+
+o：url
+
+T    自带的主题浏览切换
+
+alt＋shift＋右方向键  ： 清空播放列表
+另外，MOC 还有一个贴心的设计，那就是当你需要在控制台中进行其他的操作时，可以按 q 键切换回控制台界面，而不必担心会中断音乐播放。
+
+补充下，MOC播放器的配置文件，在： home/XXX/.moc/config，有2个问题，可以在里面解决：
+1. 背景透明： XTermTheme = transparent-background
+2. 中文歌名乱码：ReadTags = no
+
+直接把内容复制到里面，保存就行了。config文件默认是空的。
+
+此外，默认的MOC播放器，只能播放mp3，如果需要用它播放wma，则：
+sudo apt-get install moc-ffmpeg-plugin，装完就行了。

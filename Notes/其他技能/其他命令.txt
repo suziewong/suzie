@@ -1,0 +1,32 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-04-23T17:46:50+08:00
+
+====== 其他命令 ======
+Created 星期一 23 四月 2012
+* date 显示今日时间
+* cal  显示月份日期
+* bc  计算机
+* 
+
+=== 调节亮度（已经写进.bashrc alias set33了） ===
+
+* 
+
+=== sudo setpci -s 00:02.0 F4.B=XX(XX为亮度的值，00为最暗，FF为最亮)~/桌面/调节亮度 ===
+
+* man info均为帮助文档
+* sync 数据同步写入磁盘，在关机之前可执行，防止那些还在内存的数据丢失
+* who 看谁当前在线
+* shutdown -k now 'this system will reboot' 提醒用户们发出警告文件，但是不会关机
+* 
+
+=== mplayer电影当作字符播放 ===
+
+* 
+
+=== mplayer -vo aa -monitorpixelaspect 0.5 filename ===
+
+         aa输出不能保证，正常比例，用monitorpixelaspect 来调节比例
+         1，2控制对比度  3，4 控制亮度  5切换快速渲染 6切换抖动方式 7反转效果  
+         a  换成caca 输出，即彩色模式输出

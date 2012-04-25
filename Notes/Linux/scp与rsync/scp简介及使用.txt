@@ -1,0 +1,67 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-04-25T17:00:12+08:00
+
+====== scp简介及使用 ======
+Created 星期三 25 四月 2012
+ssh scp的简介及作用：
+
+scp就是secure copy的简写，用于在linux下进行远程拷贝文件的命令,和它类似的命令有cp,不过cp只是在本机进行拷贝不能跨服务器. 有时我们需要获得远程服务器上的某个文件，该服务器既没有配置ftp服务器，也没有做共享，无法通过常规途径获得文件时，只需要通过简单的scp命令便可达到目的。
+一、Linux ssh scp 的使用方法
+
+ 
+
+1：将本机文件复制到远程服务器上
+#scp /home/test/item.txt root@192.168.1.129:/etc/test
+/home/test/ 本地文件的绝对路径；
+
+item.txt 要复制到服务器上的本地文件 ；
+
+root 通过root用户登录到远程服务器（也可以使用其他拥有同等权限的用户） ；
+
+192.168.1.129 远程服务器的ip地址（也可以使用域名或机器名） ；
+
+/etc/test将本地文件复制到位于远程服务器上的路径 ；
+如图通过root用户登录远程服务器，输入yes表示同意建立ssh连接 ；
+按提示输入root用户的密码 ；
+如图所示建立连接后开始传输文件，显示百分比、实际时间和传送速度等信息 ；
+2：将本地目录上传到远程服务器上：
+
+# scp -r /home/test/ root@192.168.1.129:/etc/test
+
+-r 参数表示递归复制（即复制该目录下面的文件和目录）；/home/test/表示准备要上传的目录，root@192.168.1.129:/etc/test表示使用root用户登录远程服务器，:/etc/test 表示保存在远程服务器上的目录位置。
+
+
+3、将远程服务器上的文件复制到本机
+#scp remote@www.abc.com:/usr/local/sin.sh /home/test
+
+remote 通过remote用户登录到远程服务器（也可以使用其他拥有同等权限的用户）
+www.abc.com 远程服务器的域名（当然也可以使用该服务器ip地址）
+/usr/local/sin.sh 欲复制到本机的位于远程服务器上的文件
+/home/testr 将远程文件复制到本地的绝对路径
+
+ 
+
+4、将远程服务器上的目录复制到本机
+
+# scp-r  root@www.vpser.net:/user/local/  /home/test/
+
+r 参数表示递归复制（即复制该目录下面的文件和目录）；root@www.vpser.net 表示使用root用户登录远程服务器www.vpser.net，:/user/local/ 表示远程服务器上的目录，最后面的/home/test/表示保存在本地上的路径。
+
+ 5、可能有用的几个参数 :
+
+-v 和大多数 linux 命令中的 -v 意思一样 , 用来显示进度 . 可以用来查看连接 , 认证 , 或是配置错误 .
+
+-C 使能压缩选项 .
+
+-4 强行使用 IPV4 地址 .
+
+-6 强行使用 IPV6 地址
+
+
+注意两点：
+1.如果远程服务器防火墙有特殊限制，scp便要走特殊端口，具体用什么端口视情况而定，命令格式如下：
+#scp -P 4588 remote@www.abc.com:/usr/local/sin.sh /home/administrator
+
+注意-P 选择端口 . 注意 -p 已经被 rcp 使用  89的端口是65089
+2.使用scp要注意所使用的用户是否具有可读取远程服务器相应文件的权限

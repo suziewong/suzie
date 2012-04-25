@@ -1,0 +1,13 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-04-23T16:29:35+08:00
+
+====== 翻墙 ======
+Created 星期一 23 四月 2012
+
+=== goagent 翻墙 ===
+  1.http://code.google.com/p/goagent/ 下载goagent（下载地址已经被gfw，需翻墙）
+  2.goagent教程
+   http://maolihui.com/goagent-detailed-version-of-the-tutorial.html 
+  3.解决 GoAgent 证书无效警告 
+   http://blog.mutoo.im/2011/10/goagent-ssl-failed/ 

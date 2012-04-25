@@ -1,0 +1,68 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-04-25T16:57:22+08:00
+
+====== 89配X2.5 ======
+Created 星期三 25 四月 2012
+1.用winscp二进制传到我的目录
+2.然后复制到/opt/www
+  Sudo cp -r bbs3 /opt/www/bbs3
+3.改用户和用户组
+  Sudo chown -Rwww-data bbs3
+  Sudo chgrp -R www-data bbs3
+  参照X2.5的readme文件，改安装时需要的文件权限
+4.配置nginx
+  在/etc/nginx/sites-available 新建配置文件bbs3
+  我是
+   Sudo cp  bbs2 bbs3
+   Sudo vim bbs3
+   改里面的参数，log文件位置，nginx前端监听80端口，然后给apache的8000端口
+   改完后，到sites-enable下加个软连接
+    Sudo ln -s .../sites-available/bbs3
+文件如下：
+#bbs3.zjut.com
+server{ listen 80;
+        server_name bbs3.zjut.in;
+        root /opt/www/bbs3;
+        index index.html index.htm index.php;
+        log_format bbs3_log      '$remote_addr [$time_local] '
+                                '"$request" $status $body_bytes_sent '
+                                '"$http_referer" "$http_user_agent" '
+                                '$http_x_forwarded_for';
+        access_log /opt/log/nginx/bbs/bbs3.log bbs3_log;
+        error_page 404 = /errorpage/404.html;
+        error_page 500 502 503 504 = /errorpage/500.html;
+        location ~ .*\.(gif|jpg|jpeg|png|bmp|swf|ico)$
+        {       expires 30d;    }
+        location ~ .*\.(js|css|asp|aspx)?$
+        {       expires 1h;     }
+        location /UploadFile {return 404;}
+        location /uploadfile {return 404;}
+#       location ~ .*\.(sh|bash|asp)?$
+#       {       return 403;     }
+        #location ~* \.(html|htm|xml|wmv|avi|asf|asx|mpg|mpeg|mp4|pls|mp3|mid|wav|flv|txt|exe|zip|rar|gz|tgz|bz2|uha|7z|doc|docx|xls|xlsx|pdf|iso)$
+        #{      access_log off;
+        #       include /etc/nginx/conf.d/ipdeny.conf;
+        #}
+        location ~ .*\.(php|php5)?$ {
+                proxy_pass http://127.0.0.1:8000;
+        #       access_log off;
+#               include /etc/nginx/conf.d/ipdeny.conf;
+        }
+#       error_page 403 http://whatwhat.xxx/sss.html
+}
+5.配置apache
+  在/etc/apache2/sites-available下新建bbs3
+  我是sudo cp bbs bbs3 然后改了下 
+    端口监听8000端口
+文件如下
+<VirtualHost 127.0.0.1:8000>
+ServerName bbs3.zjut.in
+DocumentRoot /opt/www/bbs3
+</VirtualHost>
+6.重启apache和nginx
+  Sudo service apache2 restart
+  Sudo serivice nginx reload
+7.浏览器 安装完，data改回755权限
+8.完工
+  域名为bbs3.zjut.in

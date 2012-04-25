@@ -1,0 +1,38 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-04-23T19:47:06+08:00
+
+====== 查看系统配置命令 ======
+Created 星期一 23 四月 2012
+**机器的名称**
+ hostname
+**查看系统内核**
+uname –a
+**查看网络配置信息**
+ifconfig
+**查看当前打开的端口**
+netstat –an
+**查看当前打开的服务**
+chkconfig –list 
+**查看磁盘信息**
+df –h
+**查看cpu的信息**
+cat /proc/cpuinfo
+**查看内存信息**
+cat /proc/meminfo 
+**查看板卡信息**
+lspci
+cat /proc/pci 
+**查看当前系统运行情况(就是查看当前进程)**
+ps –aux
+**top** (类似于windows的任务管理器,可以看到当前cpu,内存的使用情况)
+查看安装的一些服务软件
+一般都安装在/usr/local/下,所以到这个下面去查看相关的文件夹即可
+对于软件来讲,首先要看的就是它的版本,所以我列出几个常用软件查看版本的命令
+PHP:在安装的bin目录下执行 ./php –v
+MySQL:在安装的bin目录下执行 ./mysql –V    (注意这个V是大写)
+Apache:在安装的bin目录下执行./apachectl -v 
+**查看机器型号** 
+# dmidecode | grep "Product Name"  
+**查看网卡信息** 
+# dmesg | grep -i eth 

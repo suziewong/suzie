@@ -1,0 +1,17 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-04-23T18:24:29+08:00
+
+====== MD5校验 ======
+Created 星期一 23 四月 2012
+
+=== 验证MD5校验和 ===
+win下可以使用 Md5Checker
+如何检查文件的 MD5 校验? 
+要查看文件 file.iso的校验码，执行
+
+md5sum file.iso
+若要跟校验码文件比对，假设 file.iso 和校验码文件 file.iso.md5 是在相同目录下，执行
+
+md5sum -c file.iso.md5
+

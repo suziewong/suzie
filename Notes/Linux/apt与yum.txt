@@ -1,0 +1,19 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-04-23T20:04:38+08:00
+
+====== apt与yum ======
+Created 星期一 23 四月 2012
+1.apt与aptitude  是debian的，aptitude 更好（系统不会残留多余的包，更清洁）
+2.   /etc/apt/source.list  (工大自己的源，163的源)
+3. 更新源列表  update   
+4. 更新或升级已经安装的软件  upgrade
+5. 搜索软件包  apt-cache search XXX
+6..查看软件包  apt-get show XXX
+7 .安装 install
+8. 删除  remove（不会删除相应的配置文件）
+9. 删除  purge (连带删除配置文件）
+10.删除 automove 删除连带相关依赖的软件包
+11. dpkg -l XXX（例如apache2）查看安装软件包的详细信息
+
+[[~/文档/关于Ubuntu下apt的一些用法及和yum的比较.doc]]

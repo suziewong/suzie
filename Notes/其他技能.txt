@@ -1,0 +1,8 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-04-23T15:51:02+08:00
+
+====== 其他技能 ======
+Created 星期一 23 四月 2012
+
+1.tmux 类似与 screen

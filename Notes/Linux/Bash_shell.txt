@@ -1,0 +1,31 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-04-25T12:59:32+08:00
+
+====== Bash shell ======
+Created 星期三 25 四月 2012
+
+=== /etc/profile（全局变量，作用与任何用户） ===
+此文件为系统的每一个用户设置环境信息，当用户第一次登录，该文件被执行。并从/etc/profile.d目录的配置文件中搜集shell的信息。
+
+=== /etc/bashrc（ubuntu是bash.bashrc  全局） ===
+为每一个运行bash  shell 的用户执行此文件，当bash shell被打开时，该文件被读取
+
+=== ～/.bash_profile（是交互式，login进入bash运行的） ===
+每个用户都可使用该文件输入专属与自己的shell信息，当用户登录时，该文件仅执行一次，默认情况下设置一下环境变量，执行用户的.bashrc文件（ubuntu11.10木有此文件，猜测可以自己建一个）
+
+=== ～/.bashrc（局部，是交互式，non-login 进入bash运行的，通常前者调用后者） ===
+里面的变量继承与/etc/profile里的变量（父子关系）
+该文件包含专用与你的bash shell的bash信息，当登录时以及每次打开新的shell时，该文件会被读取
+
+=== ～/.bash_logout ===
+注销时，且是login in，执行此文件，文本形式时，此文件被读取，图形时不会
+
+=== ～/.bash_history ===
+记录历史输入命令
+
+=== ～/.profile ===
+当bash是以login执行，读取/.bash_profile,若他不存在，则读取～/.bash_login
+,若还不存在，则读取～/.profile
+另外,图形模式登录时，此文件将被读取，即使存在前两者
+

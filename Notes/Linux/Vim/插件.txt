@@ -1,0 +1,9 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-04-23T19:22:32+08:00
+
+====== 插件 ======
+Created 星期一 23 四月 2012
+1.c.vim
+2.ctags
+3.taglist

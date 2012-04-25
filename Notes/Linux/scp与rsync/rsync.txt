@@ -1,0 +1,156 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-04-25T17:00:43+08:00
+
+====== rsync ======
+Created 星期三 25 四月 2012
+Rsync安装，配置，使用
+主服务器 192.168.1.101  
+备份服务器A 192.168.1.103
+备份服务器B 192.168.1.XXX 
+===================1 rsync的安装
+sudo apt-get  install  rsync
+（默认centOS，ubuntu都已经安装好了）
+ubuntu缺省安装的安装中，rsync服务是没有开启的。需要做3步：
+
+1、修改/etc/default/rsync，让rsync服务在开机的时候启动。
+
+$ sudo vi /etc/default/rsync 
+
+将RSYNC_ENABLE=false改为RSYNC_ENABLE=true
+ 
+rsync 服务器架设比较简单，可能我们安装好rsync后，并没有发现配置文件，以及rsync服
+务器启动程序，因为每个管理员可能对rsync 用途不一样，所以一般的发行版只是安装好软
+件就完事了，让管理员来根据自己的用途和方向来自己架设rsync服务器；
+ 
+
+====================2 rsync服务器的配置文件rsyncd.conf
+#mkdir /etc/rsyncd  注：在/etc目录下创建一个rsyncd的目录，我们用
+来存放rsyncd.conf 和rsyncd.secrets文件；
+#touch /etc/rsyncd/rsyncd.conf  注：创建rsyncd.conf ，这是rsync
+#ln -s /etc/rsyncd/rsyncd.conf  /etc/rsyncd.conf 
+服务器的配置文件；
+#touch /etc/rsyncd/rsyncd.secrets  注：创建rsyncd.secrets ，这是
+用户密码文件；
+#chmod 600 /etc/rsyncd/rsyncd.secrets  注：为了密码的安全性，我
+们把权限设为600；
+#ls -lh /etc/rsyncd/rsyncd.secrets 
+-rw------- 1 root root 14 2007-07-15 10:21 /etc/rsyncd/rsyncd.secrets
+#touch /etc/rsyncd/rsyncd.motd
+下面我们修改 rsyncd.conf 和rsyncd.secrets 和rsyncd.motd 文件；
+rsyncd.conf 是rsync服务器主要配置文件，我们来个简单的示例；比如我们要备份服务器上
+的 /tmp/  ，在/tmp/ 中，我想把beinan 和 samba 目录排除在外；
+
+#vim rsyncd.conf：
+---------------------
+pid file = /var/run/rsyncd.pid   
+port = 873
+address = 192.168.1.101  
+#uid = nobody 
+#gid = nobody    
+uid = root   
+gid = root  
+use chroot = yes  
+read only = yes 
+
+#limit access to private LANs
+hosts allow=192.168.1.103/255.255.255.0 10.0.1.0/255.255.255.0  
+hosts deny=*
+max connections = 5 
+motd file = /etc/rsyncd/rsyncd.motd
+#This will give you a separate log file
+log file = /var/log/rsync.log
+#This will log every file transferred - up to 85,000+ per user, per sync
+transfer logging = yes
+log format = %t %a %m %f %b
+syslog facility = local3
+timeout = 300
+[linuxsirhome]   //模块名  
+path = /tmp    
+list=yes 
+ignore errors 
+auth users = ubuntu    //auth users是必须在服务器上存在的真实的系统用户，如果你想
+用多个用户，那就以,号隔开；比如 auth users = beinan , linuxsir 
+secrets file = /etc/rsyncd/rsyncd.secrets  
+comment = linuxsir tmp  
+exclude =   beinan/  samba/     
+ 
+------------
+ 
+ 
+#vim rsyncd.secrets  密码文件
+-----------
+ubuntu:222222
+
+-----------
+ 
+rsyncd.motd是定义rysnc 服务器信息的，也就是用户登录信息。比如让用户知道这个服务器
+是谁提供的等；类似ftp服务器登录时，我们所看到的 linuxsir.org ftp ……。 当然这在
+全局定义变量时，并不是必须的，你可以用#号注掉，或删除；我在这里写了一个
+rsyncd.motd的内容为：
+#vim rsyncd.motd
+-------
++ linuxsir.org  rsync  2002-2007 +
+------
+ 
+
+=============================3  启动rsync服务器
+#/usr/bin/rsync --daemon  --config=/etc/rsyncd/rsyncd.conf
+
+==============报错为 
+Failed to Create pid file /var/run/rsyncd.pid:file exists 
+解决方法：
+#ps ax|grep rsync //查看进程id
+3033    ?        S      0:00 /usr/bin/rsync --no-detach --daemon --config
+/etc/rsyncd.conf
+ 4360 pts/1    S+     0:00 tail -f rsync.log
+ 4786 pts/0    D+     0:00 grep rsync
+
+#kill 3033
+
+重启服务 #/usr/bin/rsync --daemon  --config=/etc/rsyncd/rsyncd.conf
+ 
+ 
+
+=========================4 rsync 客户端同步数据
+客户端只需要安装rsync即可，不需要特别配置
+ 
+rsync -vzrtopg --delete --progress ubuntu@192.168.1.101::linuxsirhome /tmp
+输入密码：222222
+ubuntu是指定密码文件中的用户名
+::linuxsirhome 表示在rsyncd.conf中设置的模块名
+/tmp是备份到本地的目录名
+ 
+ 
+ 
+ 
+=======================@ERROR: auth failed on moduleXXX 
+
+
+出现这种情况，先检查你的用户名和密码是否正确，如果都正确，有一个可能是原因是：远程rsync服务器的帐户密码文件的权限必须为600，例如，你在rsyncd.conf中设置了secrets file = /etc/rsyncd/rsync_pwd
+
+那么你就必须确保rsync_pwd的访问权限为600：
+
+chmod 600 /etc/rsyncd/rsync_pwd
+3、启动rsync服务。
+
+$ /etc/init.d/rsync start
+
+在客户端中就可以和服务器同步了。rsync的语法如下：
+
+rsync [OPTION]... SRC [SRC]... [USER@]HOST:DEST
+
+其中[OPTION]通常用：-vzrtopg --progress --delete，意义大概是显示同步过程详细信息，从目的地中删除源中不存在的文件。
+
+如果配好了ssh的密钥对，那么这个地方就不需要指定[USER@]了。比如我将我修改后的网站同步到服务器上，只需输入以下命令：
+
+rsync -vzrtopg --progress --delete ./dagwww/ 192.168.0.1:dagwww 
+
+还可以在~/.bashrc中加入一个alias：
+alias rsyncweb="rsync -vzrtopg --progress --delete ~/dagwww/ 192.168.0.1:dagwww "
+
+然后source一下，让它启用。
+$source ~/.bashrc
+
+之后就可以用rsyncweb命令来同步了。
+rsync只同步修改过的文件，而且是通过ssh通过传输，传输时会压缩数据，比起ftp来，即安全又快捷，实乃网站发布更新之利器也。 

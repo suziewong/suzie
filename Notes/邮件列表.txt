@@ -1,0 +1,8 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-04-23T00:17:48+08:00
+
+====== 邮件列表 ======
+Created 星期一 23 四月 2012
+1.来自服务器邮件列表的文档
+

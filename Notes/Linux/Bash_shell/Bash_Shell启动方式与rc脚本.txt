@@ -1,0 +1,142 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-04-25T12:50:03+08:00
+
+====== Bash Shell启动方式与rc脚本 ======
+Created 星期三 25 四月 2012
+
+=== Shell的不同分类 ===
+根据启动Bash Shell的方式不同，对Shell有两种分类方式
+
+== 登录Shell与非登录Shell ==
+根据Shell的启动方式不同，可以将Shell分为
+Login Shell
+Non-login Shell
+
+=== Login Shell的定义是，当前shell的argv[0]的第一个字符是-，或当前shell使用了-l ( --login ) 选项。 ===
+只要满足以上的两个条件的任意一个，bash就会表现得Login Shell一样。例如，以下列出的场景下，bash都是login shell：
+执行bash -l -c 'w' ( 使用了-l选项 )
+执行su -l admin ( 运行的Shell的argv[0]第一个字符是- )(
+
+=== 注意与su root的区别 ===
+)
+执行login -f ( 运行的Shell的argv[0]第一个字符是- )
+将当前目录加入到$PATH，根据以下命令创建到bash的链接并执行 ( 运行的Shell的argv[0]第一个字符是- )
+export PATH=".:$PATH"
+ln -s -- $(which bash) -bash   
+-bash
+
+== 交互与非交互Shell ==
+同时，根据Shell启动参数的不同，还可以将Shell分为
+Interactive Shell
+Non-interactive Shell
+Interactive Shell的定义很明确：$-环境变量中包含字符i的Shell就是Interactive Shell
+以下场景中，bash属于Interactive Shell
+bash执行时没有加上非选项参数 [^noa]
+bash执行时没有加上-c选项
+bash执行时，加上了-i选项
+以下场景中，bash属于Non-interactive Shell（非交互）
+使用rsync -e ssh同步文件（-c选项）
+其他基于ssh的文件传输，如git、svn等（基本都启用了-c选项）
+
+=== 不同Shell中启动时执行的文件 ===
+Bash启动时会按照一定的顺序载入rc文件，定义PS1、JAVA_HOME等环境变量，执行特定的脚本等。
+按照两种Shell分类排列组合，一共有4种组合。各个组合下启动载入rc文件的顺序和数量有区别，以下分别列出：
+
+=== 登录/非交互Shell & 登录/交互Shell ===
+bash会依次执行以下文件
+/etc/profile [^sysconfdir]
+~/.bash_profile
+~/.bash_login
+~/.profile
+
+=== 非登录/非交互Shell ===
+执行$BASH_ENV环境变量中指定的脚本
+
+=== 非登录/交互Shell ===
+“全局”bashrc（编译时定义SYS_BASHRC，默认为/etc/bash.bashrc）
+~/.bashrc [^exception_bashrc]
+
+=== SSH远程登录服务器执行命令场景分析 ===
+上面在分析交互/非交互、登录/非登录Shell的时候，特地省略了ssh到远程服务器执行命令这种场景下Shell类型的分类，放在这里分析。
+相关的资料不是很多，不管是bash(1)还是ssh(1)还是sshd(1)，都没有对这个场景详细说明过。经过多次尝试，在不同的rc文件里echo特定字符串，得出结论。如果分析有问题，请大家纠正。
+使用的命令为ssh 127.0.0.1 w进行分析，会发现这个命令执行时会载入~/.bashrc，不会载入/etc/profile等文件
+
+在~/.bashrc文件中放置命令ps -p $$ -o args=，可获得载入~/.bashrc文件的进程命令行为bash -c w，是一个非登录、非交互Shell。根据bash(1)中INVOCATION段的说明，此时应该只载入$BASH_ENV环境变量的脚本，不会载入/etc/bash.bashrc或~/.bashrc脚本
+
+进一步研究OpenSSH源码和Bash源码。OpenSSH中执行shell部分的代码如下：
+
+// from session.c of OpenSSH 5.9p1 
+/*
+* Execute the command using the users shell.  This uses the -c
+* option to execute the command.  
+ */
+argv[0] = (char *) shell0;
+argv[1] = "-c";
+argv[2] = (char *) command;
+argv[3] = NULL;
+execve(shell, argv, env);
+perror(shell);
+exit(1);
+而Bash中的相关代码：
+
+// from config-top.h
+
+/* Define this if you want bash to try to check whether it's being run by
+   sshd and source the .bashrc if so (like the rshd behavior). */
+/* #define SSH_SOURCE_BASHRC */
+
+// from shell.c of Bash 4.2
+
+#ifdef SSH_SOURCE_BASHRC
+      run_by_ssh = (find_variable ("SSH_CLIENT") != (SHELL_VAR *)0) ||
+                   (find_variable ("SSH2_CLIENT") != (SHELL_VAR *)0);
+#else
+
+/* ... */
+
+/* If we were run by sshd or we think we were run by rshd, execute
+~/.bashrc if we are a top-level shell. */
+if ((run_by_ssh || isnetconn (fileno (stdin))) && shell_level < 2)
+{
+#ifdef SYS_BASHRC
+#  if defined (__OPENNT)
+    maybe_execute_file (_prefixInstallPath(SYS_BASHRC, NULL, 0), 1);
+#  else
+    maybe_execute_file (SYS_BASHRC, 1);
+#  endif
+#endif
+    maybe_execute_file (bashrc_file, 1);
+    return;
+}
+可以看到，只要编译前在config-top.h中定义SSH_SOURCE_BASHRC，那么尽管Bash在被sshd fork出来的时候加上了-c选项，也确实是non-login non-interactive shell，只要发现SSH_CLIENT或者SSH2_CLIENT环境变量存在，就仍然会依次载入SYS_BASHRC、~/.bashrc文件。
+
+这个结论非常重要，因为包括svn、git、rsync在内很多命令都使用ssh作为传输层。如果/etc/bash.bashrc、~/.bashrc文件配置不合理，这些命令的执行都会有问题。
+
+请注意，在此问题上，各发行版自带bash的行为可能不同。Debian 5和6的补丁都设置了SSH_SOURCE_BASHRC，用户自己编译时可能未设定，因此也不能简单地认为通过ssh执行命令时服务器上的bash一定载入bashrc系列文件，更不可依赖bashrc来执行初始化命令。
+
+常见问题分析
+
+=== Banner、Motd类提示信息应该放在哪里？ ===
+
+某些服务器可以在用户登录时加入一些提示信息，提示用户操作等。这样的信息仅需要在用户登录时显示，因此可以将此类信息放在login shell才会载入的文件中，如/etc/profile、~/.bash_profile、~/.bash_login、~/.profile
+
+是否能将此类提示信息放在~/.bashrc文件内呢？下面说明
+
+=== 在~/.bashrc文件是否能source ~/.bash_profile呢？ ===
+
+以前遇到过一个问题。跳板机上在~/.bashrc里显示了一些banner信息，导致诡异地无法从其他服务器rsync文件到这台跳板机上。
+
+从rsync(1)的DIAGNOSTICS部分可以看到，rsync非常依赖于shell执行时没有任何输出。如果在~/.bashrc中source了~/.bash_profile，而~/.bash_profile中又有无关的文字输出，就会导致从其他服务器rsync到此服务器失败，报错信息为"protocol version mismatch — is your shell clean?"。这也回答了上一节的问题：banner类信息不能放在~/.bashrc文件内
+
+但是反过来，在~/.bash_profile中source ~/.bashrc是可以的，但是使用时要非常小心（容易引起循环引用，导致问题）
+
+=== ssh到服务器执行java -version为什么版本和实际应用使用的不一致？ ===
+
+目前JAVA_HOME、PATH等环境变量的定义是在/etc/profile。ASA比较常见的操作是脚本跑一个集群，ssh到相应服务器上确认java版本是否正确。这个时候shell只会载入~/.bashrc，不会载入/etc/profile。
+
+解决方法可以用以下任一：
+
+先source /etc/profile再执行java -version来判断
+执行 ssh remote-host 'bash -l -c "java -version"'
+[^noa]: Non-option Arguments，即不以-开头的参数。例如，bash -l test.sh，-l是option argument，test.sh是non-option argument [^sysconfdir]: 严格地说，是${SYSCONFDIR}/profile文件。${SYSCONFDIR}是程序编译时，传递给configure脚本的--sysconfdir选项指定的目录。编译时没有指定--sysconfdir则使用--prefix指定的路径下etc文件夹。默认${SYSCONFDIR}为/ [^exception_bashrc]: 存在例外情况。如果编译bash时加上了#define SYS_BASHRC /etc/bashrc或CPPFLAGS加上了-DSYS_BASHRC=/etc/bashrc，那么任何时候~/.bashrc被载入前，${SYS_BASHRC}文件先被载入

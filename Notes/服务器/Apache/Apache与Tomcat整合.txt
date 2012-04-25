@@ -1,0 +1,35 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-04-23T20:20:00+08:00
+
+====== Apache与Tomcat整合 ======
+Created 星期一 23 四月 2012
+1.   Apache直接省略
+2.  安装jdk环境
+	   sudo apt-get install openjdk-7-jdk
+3 各种安装（随便你是新立得还是apt-get）
+           tomcat7,
+           libapache2-mod-jk,
+           libmysql-java 
+           Tomcat7-admin 
+            Tomcat7-docs 
+            Tomcat7-examples 
+4. 配置jdk环境
+      vim ~/.bashrc
+ 		export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-i386
+ 		 export JRE_HOME=${JAVA_HOME}/jre
+export CLASSPATH=.:${JAVA_HOME}/lib:${JRE_HOME}/lib
+export PATH=${JAVA_HOME}/bin:$PATH
+完工后 source ~/.bashrc
+5. 试验一下helloworld
+1    public class HelloWorld{
+2    public static void main (String[]  args){
+3       System.out.println("Hello World!huaweifan.com");
+4    }
+5 }
+6. javac helloworld。Java
+  Java helloworld
+  出现了helloworld即成功了
+
+
+

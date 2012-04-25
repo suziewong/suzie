@@ -1,0 +1,123 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-04-23T19:02:10+08:00
+
+====== OpenSSH 密钥管理 ======
+Created 星期一 23 四月 2012
+
+==== 第 1 部分 理解 RSA/DSA 认证 ====
+          简介： 在本系列文章中，您将学习 RSA 和 DSA 认证的工作原理，以及了解如何正确设置无密码认证。在本系列的第一篇文章里，Daniel Robbins 主要介绍 RSA 和 DSA 认证协议并向您展示如何在网络上应用这些协议。在本系列文章中，您将学习 RSA 和 DSA 认证的工作原理，以及了解如何正确设置无密码认证。在本系列的第一篇文章里，Daniel Robbins 主要介绍 RSA 和 DSA 认证协议并向您展示如何在网络上应用这些协议。
+          我们中有许多人把优秀的 OpenSSH（参见本文后面的参考资料）用作古老的 telnet 和 rsh 命令的替代品，OpenSSH 不仅是安全的而且是加密的。OpenSSH 更加吸引人的特性之一是它能够使用基于一对互补的数字式密钥的 RSA 和 DSA 认证协议来认证用户。RSA 和 DSA 认证承诺不必提供密码就能够同远程系统建立连接，这是它的主要魅力之一。虽然这非常吸引人，但是 OpenSSH 的新用户们常常以一种快速却不完善的方式配置 RSA/DSA，结果虽然实现了无密码登录，却也在此过程中开了一个很大的安全漏洞。
+
+=== 什么是 RSA/DSA 认证？ ===
+SSH，特别是 OpenSSH（完全免费的 SSH 的实现），是一个不可思议的工具。类似于 telnet 或 rsh，ssh 客户程序也可以用于登录到远程机器。所要求的只是该远程机器正在运行 sshd，即 ssh 服务器进程。但是，与 telnet 不同的是，ssh 协议非常安全。加密数据流，确保数据流的完整性，甚至安全可靠的进行认证它都使用了专门的算法。
+然而，虽然 ssh 的确很棒，但还是有一个 ssh 功能组件常常被忽略、被危险的误用或者简直就是被误解。这个组件就是 OpenSSH 的 RSA/DSA 密钥认证系统，它可以代替 OpenSSH 缺省使用的标准安全密码认证系统。
+OpenSSH 的 RSA 和 DSA 认证协议的基础是一对专门生成的密钥，分别叫做专用密钥和公用密钥。使用这些基于密钥的认证系统的优势在于：在许多情况下，有可能不必手工输入密码就能建立起安全的连接。
+尽管基于密钥的认证协议相当安全，但是当用户并不完全了解这些简化操作对安全性的影响，为了方便而使用某些简化操作时，就会出现问题。本文中，我们将详细讨论如何正确使用 RSA 和 DSA 认证协议，使我们不会冒任何不必要的安全性风险。在我的下一篇文章里，我将向您展示如何使用 ssh-agent 隐藏已经解密的专用密钥，还将介绍 keychain，它是 ssh-agent 的前端，可以在不牺牲安全性的前提下提供许多便利。如果您一直想要掌握 OpenSSH 更高级的认证功能的话，那么就请您继续往下读吧。
+
+=== RSA/DSA 密钥的工作原理 ===
+下面从整体上粗略的介绍了 RSA/DSA 密钥的工作原理。让我们从一种假想的情形开始，假定我们想用 RSA 认证允许一台本地的 Linux 工作站（称作 localbox）打开 remotebox 上的一个远程 shell，remotebox 是我们的 ISP 的一台机器。此刻，当我们试图用 ssh 客户程序连接到 remotebox 时，我们会得到如下提示：
+% ssh drobbins@remotebox
+drobbins@remotebox's password:
+此处我们看到的是 ssh 处理认证的缺省方式的一个示例。换句话说，它要求我们输入 remotebox 上的 drobbins 这个帐户的密码。如果我们输入我们在 remotebox 上的密码，ssh 就会用安全密码认证协议，把我们的密码传送给 remotebox 进行验证。但是，和 telnet 的情况不同，这里我们的密码是加密的，因此它不会被偷看到我们的数据连接的人截取。一旦 remotebox 把我们提供的密码同它的密码数据库相对照进行认证，成功的话，我们就会被允许登录，还会有一个 remotebox 的 shell 提示欢迎我们。虽然 ssh 缺省的认证方法相当安全，RSA 和 DSA 认证却为我们开创了一些新的潜在的机会。
+但是，与 ssh 安全密码认证不同的是，RSA 认证需要一些初始配置。我们只需要执行这些初始配置步骤一次。之后，localbox 和 remotebox 之间的 RSA 认证就毫不费力了。要设置 RSA 认证，我们首先得生成一对密钥，一把专用密钥和一把公用密钥。这两把密钥有一些非常有趣的性质。公用密钥用于对消息进行加密，只有拥有专用密钥的人才能对该消息进行解密。公用密钥只能用于 加密，而专用密钥只能用于对由匹配的公用密钥编码的消息进行解密。RSA（和 DSA）认证协议利用密钥对的这些特殊性质进行安全认证，并且不需要在网上传输任何保密的信息。
+要应用 RSA 或者 DSA 认证，我们要执行一步一次性的配置步骤。我们把公用密钥拷贝到 remotebox。公用密钥之所以被称作是“公用的”有一个原因。因为它只能用于对那些给我们的消息进行 加密，所以我们不需要太担心它会落入其它人手中。一旦我们的公用密钥已经被拷贝到 remotebox 并且为了 remotebox 的 sshd 能够定位它而把它放在一个专门的文件（~/.ssh/authorized_keys）里，我们就为使用 RSA 认证登录到 remotebox 上做好了准备。
+要用 RSA 登录的时候，我们只要在 localbox 的控制台键入 ssh drobbins@remotebox，就象我们常做的一样。可这一次，ssh 告诉 remotebox 的 sshd 它想使用 RSA 认证协议。接下来发生的事情非常有趣。Remotebox 的 sshd 会生成一个随机数，并用我们先前拷贝过去的公用密钥对这个随机数进行加密。然后， sshd 把加密了的随机数发回给正在 localbox 上运行的 ssh。接下来，轮到我们的 ssh 用专用密钥对这个随机数进行解密后，再把它发回给 remotebox，实际上等于在说：“瞧，我确实有匹配的专用密钥；我能成功的对您的消息进行解密！”最后， sshd 得出结论，既然我们持有匹配的专用密钥，就应当允许我们登录。因此，我们有匹配的专用密钥这一事实授权我们访问 remotebox。
+回页首
+
+=== 两项注意事项 ===
+关于 RSA 和 DSA 认证有两项重要的注意事项。第一项是我们的确只需要生成一对密钥。然后我们可以把我们的公用密钥拷贝到想要访问的那些远程机器上，它们都会根据我们的那把专用密钥进行恰当的认证。换句话说，我们并不需要为想要访问的 每个系统都准备一对密钥。只要一对就足够了。
+另一项注意事项是专用密钥不应落入其它人手中。正是专用密钥授权我们访问远程系统，任何拥有我们的专用密钥的人都会被授予和我们完全相同的特权。如同我们不想让陌生人有我们的住处的钥匙一样，我们应该保护我们的专用密钥以防未授权的使用。在比特和字节的世界里，这意味着没有人是本来就应该能读取或是拷贝我们的专用密钥的。
+ssh 的开发者们当然知道专用密钥的重要性，而且他们已经在 ssh 和 ssh-keygen 里加入了一些防范措施，以防止我们的专用密钥被滥用。首先，ssh 被设置成了如果我们的密钥的文件权限允许除我们之外的任何人读取密钥，就打印出一条大大的警告消息。其次，在我们用 ssh-keygen 创建公用／专用密钥对的时候，ssh-keygen 会要求我们输入一个密码短语。如果我们输入了密码短语，ssh-keygen 就会用该密码短语加密我们的专用密钥，这样，即使专用密钥被盗，对于那些碰巧不知道密码短语的人而言，这把专用密钥是毫无用处的。具备了这一知识后，让我们看一下如何设置 ssh 以应用 RSA 和 DSA 认证协议。
+
+=== ssh-keygen 细探 ===
+设置 RSA 认证的第一步从生成一对公用／专用密钥对开始。RSA 认证是 ssh 密钥认证的最初形式，因此 RSA 应该可以用于 OpenSSH 的所有版本，尽管这样，我还是推荐您安装可用的最近版本，在我写这篇文章的时候是 openssh-2.9_p2。生成一对 RSA 密钥的方法如下：
+% ssh-keygen
+Generating public/private rsa1 key pair.
+Enter file in which to save the key (/home/drobbins/.ssh/identity): (hit enter)
+Enter passphrase (empty for no passphrase): (enter a passphrase)
+Enter same passphrase again: (enter it again)
+Your identification has been saved in /home/drobbins/.ssh/identity.
+Your public key has been saved in /home/drobbins/.ssh/identity.pub.
+The key fingerprint is:
+a4:e7:f2:39:a7:eb:fd:f8:39:f1:f1:7b:fe:48:a1:09 drobbins@localbox
+当 ssh-keygen 要求输入存放密钥的缺省位置时，我们敲回车键接受缺省的 /home/drobbins/.ssh/identity。ssh-keygen 将把专用密钥保存在此路径中，公用密钥就存在紧临它的一个叫做 identity.pub 的文件里。
+还要请您注意一下 ssh-keygen 还提示过我们输入密码短语。当时我们输入了一个好的密码短语（七位或者更多位难以预测的字符）。然后 ssh-keygen 用这个密码短语加密了我们的专用密钥（~/.ssh/identity），以使我们的专用密钥对于那些不知道这个密码短语的人将变得毫无用处。
+
+=== 追求快速的折衷方案 ===
+当我们指定密码短语时，虽然这使得 ssh-keygen 保护我们的专用密钥以防误用，但是也带来了一点小小的不便。现在，每当我们试图用 ssh 连接到 drobbins@remotebox 帐户时，ssh 都会提示我们输入该密码短语以便它能对我们的专用密钥进行解密，并使用我们的专用密钥进行 RSA 认证。此外，我们输入的不是 remotebox 上 drobbins 帐户的密码，而是在本地机器上对专用密钥进行解密所需要的密码短语。一旦我们的专用密钥被解密，我们的 ssh 客户程序就会处理其余的事情。虽然使用我们的远程密码和使用 RSA 密码短语的机制完全不同，但实际上还是会提示我们输入一个“保密的短语”给 ssh。
+
+# ssh drobbins@remotebox
+Enter passphrase for key '/home/drobbins/.ssh/identity': (enter passphrase)
+Last login: Thu Jun 28 20:28:47 2001 from localbox.gentoo.org 
+Welcome to remotebox!
+这里就是人们经常会被误导而导致追求快速的折衷方案的地方。有很多时候，仅仅是为了不必输入密码，人们就会创建不加密的专用密钥。那样的话，他们只要输入 ssh命令，立刻就会通过 RSA（或是 DSA）认证并登录。
+# ssh drobbins@remotebox
+Last login: Thu Jun 28 20:28:47 2001 from localbox.gentoo.org 
+
+Welcome to remotebox!
+然而，尽管这样很方便，但是在还没有完全理解这种方法对安全性的影响时，您不应该使用。如果有人在某一时刻闯入了 localbox，一把不加密的专用密钥使得他们也自动有权访问 remotebox 以及其它所有用这把公用密钥配置过的系统。
+我知道您在想些什么。无密码认证，虽然有点冒险，可看起来的确很诱人。我完全同意。但是， 还有更好的办法！请相信我，我将向您展示如何既可以享受到无密码认证的好处，又不必牺牲专用密钥的安全性。在我的下一篇文章里，我还将向您展示如何熟练的使用 ssh-agent（正是它最先使得安全无密码认证成为可能）。现在，让我们通过设置 RSA 和 DSA 认证为使用 ssh-agent 做好准备。下面是逐步的指导。
+
+=== RSA 密钥对的生成 ===
+要设置 RSA 认证，我们需要执行生成公用／专用密钥对的一次性步骤。我们的输入如下：
+% ssh-keygen
+出现提示时，请接受缺省的密钥位置（典型的情况下是 ~/.ssh/identity 和存储公用密钥的 ~/.ssh/identity.pub），并提供给 ssh-keygen 一个安全的密码短语。一旦 ssh-keygen 完成，您将会得到一把公用密钥和一把用密码短语加密的专用密钥。
+回页首
+RSA 公用密钥的安装
+接下来，我们需要把正在运行 sshd 的远程系统设置成使用我们的公用 RSA 密钥进行认证。典型情况下，我们通过象下面这样把公用密钥拷贝到远程系统完成这一步：
+% scp ~/.ssh/identity.pub drobbins@remotebox:			
+由于 RSA 认证还没有完全设置好，所以会提示我们输入 remotebox 上的密码。请您照做。然后，登录到 remotebox 并把公用密钥附加到文件 ~/.ssh/authorized_keys 上，如下所示：
+
+% ssh drobbins@remotebox
+drobbins@remotebox's password: (enter password)
+Last login: Thu Jun 28 20:28:47 2001 from localbox.gentoo.org 
+
+Welcome to remotebox!
+
+% cat identity.pub >> ~/.ssh/authorized_keys
+% exit
+			
+
+现在，配置过 RSA 认证以后，当我们试图使用 ssh 连接到 remotebox 时，应该会提示我们输入 RSA 密码短语（而不是我们的密码）。
+
+% ssh drobbins@remotebox
+Enter passphrase for key '/home/drobbins/.ssh/identity': 
+好哇，RSA 认证的配置完成了！如果刚才没有提示您输入密码短语，您可以试验一下以下几种情况。第一，尝试通过输入 ssh -1 drobbins@remotebox 登录。它会让 ssh 只应用 ssh 协议版本 1，如果出于某种原因远程系统缺省设置的是 DSA 认证的话，可能会要求这么做。如果不奏效的话，请确认您的 /etc/ssh/ssh_config 里没有写着这么一行 RSAAuthentication no。如果有的话，请您在前面加上一个“#”把这行注释掉。另外，还可以试着同 remotebox 的系统管理员联络，核实一下在他们那一端已经启用了 RSA 认证，并且 /etc/ssh/sshd_config 里的设置是正确的。
+
+=== DSA 密钥的生成 ===
+ssh 协议的版本 1 使用的是 RSA 密钥，而 DSA 密钥却用于协议级 2，这是 ssh 协议的最新版本。目前所有的 OpenSSH 版本都应该既能使用 RSA 密钥又能使用 DSA 密钥。DSA 密钥以如下类似于 RSA 密钥的方式使用 OpenSSH 的 ssh-keygen 生成：
+% ssh-keygen -t dsa
+又会提示我们输入密码短语。输入一个安全的密码短语。还会提示我们输入保存 DSA 密钥的位置。正常情况下，缺省的 ~/.ssh/id_dsa 和 ~/.ssh/id_dsa.pub 就可以了。在我们一次性生成 DSA 密钥完成后，就该把我们的 DSA 公用密钥安装到远程系统上去了。
+
+=== DSA 公用密钥的安装 ===
+DSA 公用密钥的安装又是几乎和 RSA 安装完全一样。对于 DSA，我们将要把 ~/.ssh/id_dsa.pub 文件拷贝到 remotebox，然后把它附加到 remotebox 上的 ~/.ssh/authorized_keys2 文件。请注意这个文件的名字和 RSA 的 authorized_keys 文件名不同。一旦配置完毕，输入我们的 DSA 专用密钥的密码短语就应该能登录到 remotebox，而不需要我们输入在 remotebox 上真正的密码。
+下一篇
+此刻，您应该已经可以使用 RSA 或者 DSA 认证了，但是在每一次新连接时，您仍需输入您的密码短语。在我的下一篇文章里，我们将会了解到如何使用 ssh-agent，它确实是一个很不错的系统，不仅允许我们不提供密码就建立连接，而且还使我们的专用密钥可以在磁盘上保持加密状态。我还将介绍 keychain，它是一个非常方便的 ssh-agent 前端，可以使 ssh-agent 比以前更可靠、更方便而且使用起来更具趣味性。在此之前，请就近查阅下面列出的参考资料以使您能跟上进度。
+
+参考资料
+处理 Linux 中的安全事宜、 更多的 Linux 参考资料、 更多的开放源代码参考资料 
+
+请务必访问 OpenSSH 的开发主页。 
+
+请看看最新的 OpenSSH 源代码 tarball 和 RPM。	
+
+请查阅 OpenSSH 常见问题解答。	
+
+PuTTY 是用于 Windows 机器的极好的 ssh 客户程序。	
+
+您会发现 O'Reilly 的 SSH, The Secure Shell: The Definitive Guide 会对您有所帮助。作者的网站上有关于这本书、常见问题解答、新闻和最新信息。	
+
+请阅读 developerWorks 上的 Addressing security issues in Linux 以获得关于数据加密和许多其它安全性论题的概述。	
+
+请浏览 developerWorks 上更多的 Linux 参考资料。	
+
+请浏览 developerWorks 上 更多的开放源代码参考资料。	
+
+关于作者
+
+Daniel Robbins 居住在美国新墨西哥州的阿尔布开克。他主创了 Gentoo Linux，这是一种用于 PC 的高级 Linux，以及 Portage 系统，是用于 Linux 的下一代移植系统。他还是几本 Macmillan 出版的书籍 Caldera OpenLinux Unleashed、SuSE Linux Unleashed 和 Samba Unleashed 的投稿人。Daniel 自二年级起就与计算机结下了不解之缘，那时他最先接触的是 Logo 程序语言，并沉溺于 Pac Man 游戏中。这也许就是他至今仍担任 SONY Electronic Publishing/Psygnosis 首席图形设计师的原因所在。Daniel 喜欢与妻子 Mary 和新出生的女儿 Hadassah 一起共度时光。
+
+==== 第 2 部分 介绍 ssh-agent 和 keychain ====
+
+

@@ -1,0 +1,16 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-04-25T14:08:51+08:00
+
+====== Bash shell 登录例子 ======
+Created 星期三 25 四月 2012
+1.图形模式登录，顺序读取/etc/profile和～/.profile
+2.图形模式登录后，打开终端，顺序读取/etc/bash.bashrc和/.bashrc
+3.文本形式登录时，顺序读取/etc/bash.bashrc，～/etc/profile和/.bash_profile
+4.从其他用户su 到该用户 ，分为两种
+   1.带-l  （login模式）则顺序读取/etc/bash.bashrc，～/etc/profile和/.bash_profile
+    2.不带-l（non-login模式）则顺序读取/etc/bash.bashrc和/.bashrc
+5.退出时，login模式的用logout退出，读取/.bash_login,否则用exit
+6.login与non-login具体可见[[Linux:Bash shell:Bash Shell启动方式与rc脚本]]
+7.上述若读取/.bash_profile,若他不存在，则读取～/.bash_login
+,若还不存在，则读取～/.profile

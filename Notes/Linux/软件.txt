@@ -1,0 +1,9 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-04-23T17:46:02+08:00
+
+====== 软件 ======
+Created 星期一 23 四月 2012
+win下的命令行：cygwin或msys+mingw（开发用）
+1.moc 终端音乐播放类、
+2.vlc    ,mplayer终端下2进制码，smplayer是带gui的，不过vlc给力，看打分即可

@@ -1,0 +1,24 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-04-23T16:16:46+08:00
+
+====== bashrc ======
+Created 星期一 23 四月 2012
+采用rsa的方式，在89上无需密码即可登录
+另外通过更改.bashrc
+加上alias  zjutin='ssh -p 65089  suzie@210.32.200.89'
+实现了了输入zjutin即可登录
+
+=== bashrc是神马？ ===
+使用man bash命令查看到的联机帮助文件中的相关解释如下：
+.bashrc - The individual per-interactive-shell startup file.
+这个文件主要保存个人的一些个性化设置，如命令别名、路径等。下面是个例子：
+ # User specific aliases and functions
+ PATH="/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin"
+ LANG=zh_CN.GBK
+ export PATH LANG
+ alias rm='rm -i'
+ alias ls='/bin/ls -F --color=tty --show-control-chars'
+例子中定义了路径，语言，命令别名（使用rm删除命令时总是加上-i参数需要用户确认，使用ls命令列出文件列表时加上颜色显示）。每次修改.bashrc后，使用source ~/.bashrc（或者 . ~/.bashrc）就可以立刻加载修改后的设置，使之生效。
+一般会在.bash_profile文件中显式调用.bashrc。登陆linux启动bash时首先会去读取~/.bash_profile文件，这样~/.bashrc也就得到执行了，你的个性化设置也就生效了。
+
